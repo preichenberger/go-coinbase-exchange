@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"math"
 	"net/http"
 	"os"
 	"strconv"
@@ -17,7 +16,6 @@ type Client struct {
 	Key        string
 	Passphrase string
 	HTTPClient *http.Client
-	RetryCount int
 }
 
 type ClientConfig struct {
@@ -41,7 +39,6 @@ func NewClient() *Client {
 		HTTPClient: &http.Client{
 			Timeout: 15 * time.Second,
 		},
-		RetryCount: 0,
 	}
 
 	if os.Getenv("COINBASE_PRO_SANDBOX") == "1" {
@@ -75,19 +72,15 @@ func (c *Client) UpdateConfig(config *ClientConfig) {
 
 func (c *Client) Request(method string, url string,
 	params, result interface{}) (res *http.Response, err error) {
-	for i := 0; i < c.RetryCount+1; i++ {
-		retryDuration := time.Duration((math.Pow(2, float64(i))-1)/2*1000) * time.Millisecond
-		time.Sleep(retryDuration)
 
-		res, err = c.request(method, url, params, result)
-		if res != nil && res.StatusCode == 429 {
-			continue
-		} else {
-			break
-		}
+	if err = BeforeRequest(c, method, fmt.Sprintf("%s%s", c.BaseURL, url)); err != nil {
+		return nil, err
 	}
+	defer func() {
+		AfterRequest()
+	}()
 
-	return res, err
+	return c.request(method, url, params, result)
 }
 
 func (c *Client) request(method string, url string,

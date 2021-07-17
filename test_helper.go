@@ -12,7 +12,6 @@ func NewTestClient() *Client {
 	client.UpdateConfig(&ClientConfig{
 		BaseURL: "https://api-public.sandbox.pro.coinbase.com",
 	})
-	client.RetryCount = 2
 
 	return client
 }

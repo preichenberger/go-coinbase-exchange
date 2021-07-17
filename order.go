@@ -22,7 +22,7 @@ type Order struct {
 	Funds          string `json:"funds,omitempty"`
 	SpecifiedFunds string `json:"specified_funds,omitempty"`
 	// Response Fields
-	ID            string `json:"id"`
+	ID            string `json:"id,omitempty"`
 	Status        string `json:"status,omitempty"`
 	Settled       bool   `json:"settled,omitempty"`
 	DoneReason    string `json:"done_reason,omitempty"`
